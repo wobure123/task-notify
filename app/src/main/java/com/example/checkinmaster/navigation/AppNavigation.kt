@@ -6,6 +6,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.example.checkinmaster.ui.screens.detail.TaskDetailScreen
 import com.example.checkinmaster.ui.screens.detail.TaskDetailViewModel
 import com.example.checkinmaster.ui.screens.home.HomeScreen
@@ -27,7 +29,10 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onTaskClick = { navController.navigate("detail/$it") }
             )
         }
-        composable("detail/{taskId}") { backStackEntry ->
+        composable(
+            route = "detail/{taskId}",
+            arguments = listOf(navArgument("taskId") { type = NavType.IntType })
+        ) { backStackEntry ->
             val vm: TaskDetailViewModel = hiltViewModel(backStackEntry)
             TaskDetailScreen(viewModel = vm, onBack = { navController.popBackStack() })
         }
