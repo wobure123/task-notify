@@ -5,6 +5,7 @@ on:
     branches: [ "main", "develop" ]
   pull_request:
     branches: [ "main", "develop" ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,6 +21,28 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: Prepare signing (optional)
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PASSWORD" ] && [ -n "$KEY_ALIAS" ] && [ -n "$KEY_PASSWORD" ]; then
+            echo "🔐 Detected signing secrets. Preparing keystore..."
+            echo "$KEYSTORE_BASE64" | base64 --decode > "$GITHUB_WORKSPACE/keystore.jks"
+            {
+              echo "SIGNING_STORE_FILE=$GITHUB_WORKSPACE/keystore.jks"
+              echo "SIGNING_STORE_PASSWORD=$KEYSTORE_PASSWORD"
+              echo "SIGNING_KEY_ALIAS=$KEY_ALIAS"
+              echo "SIGNING_KEY_PASSWORD=$KEY_PASSWORD"
+            } >> "$GITHUB_ENV"
+            echo "Keystore ready. Release build will be signed."
+          else
+            echo "ℹ️  No signing secrets provided. Release APK will be unsigned."
+          fi
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -31,6 +54,31 @@ jobs:
         with:
           name: debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Prepare test signing (no secrets)
+        shell: bash
+        run: |
+          set -e
+          KEYSTORE_PATH="$GITHUB_WORKSPACE/release-test.jks"
+          if [ ! -f "$KEYSTORE_PATH" ]; then
+            echo "🔐 Generating test keystore (for CI signing)..."
+            keytool -genkey -noprompt \
+              -alias release \
+              -dname "CN=CheckInMaster, OU=Dev, O=CheckInMaster, L=City, S=State, C=CN" \
+              -keystore "$KEYSTORE_PATH" \
+              -storepass 123456 \
+              -keypass 123456 \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 36500
+          fi
+          {
+            echo "SIGNING_STORE_FILE=$KEYSTORE_PATH"
+            echo "SIGNING_STORE_PASSWORD=123456"
+            echo "SIGNING_KEY_ALIAS=release"
+            echo "SIGNING_KEY_PASSWORD=123456"
+          } >> "$GITHUB_ENV"
+          echo "✅ Test signing prepared: $KEYSTORE_PATH"
 
       - name: Build Release APK
         run: ./gradlew assembleRelease --stacktrace

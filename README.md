@@ -54,6 +54,10 @@ git push -u origin main
    - `debug-apk`: 未签名调试版本
    - `release-apk`: 发布版本（未签名）
 
+👉 想要直接得到“已签名”的 Release APK？请阅读 `SIGNING_QUICK_START.md`，内置两种方式：
+- 无需配置 Secrets，CI 自动生成测试签名并签出可安装 APK（最简单）
+- 配置你自己的固定签名（正式分发/内测推荐）
+
 ### 可选：配置签名发布
 如需发布签名版本，在仓库 Settings → Secrets 中添加：
 - `KEYSTORE_BASE64`: 签名文件的 Base64 编码
