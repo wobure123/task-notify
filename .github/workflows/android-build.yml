@@ -46,8 +46,23 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Select Gradle (wrapper or fallback)
+        shell: bash
+        run: |
+          set -e
+          if [ -x "./gradlew" ] && [ -f "gradle/wrapper/gradle-wrapper.jar" ]; then
+            echo "Using Gradle Wrapper"
+            echo "GRADLE_CMD=./gradlew" >> "$GITHUB_ENV"
+          else
+            echo "Gradle Wrapper missing. Downloading Gradle 8.7..."
+            curl -sSL https://services.gradle.org/distributions/gradle-8.7-bin.zip -o gradle.zip
+            unzip -q gradle.zip
+            echo "GRADLE_CMD=$GITHUB_WORKSPACE/gradle-8.7/bin/gradle" >> "$GITHUB_ENV"
+            echo "Using $GITHUB_WORKSPACE/gradle-8.7/bin/gradle"
+          fi
+
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: $GRADLE_CMD assembleDebug --stacktrace
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
@@ -81,7 +96,7 @@ jobs:
           echo "✅ Test signing prepared: $KEYSTORE_PATH"
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease --stacktrace
+        run: $GRADLE_CMD assembleRelease --stacktrace
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
