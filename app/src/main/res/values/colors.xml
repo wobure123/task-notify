@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="pink_primary">#FE5167</color>
+    <color name="text_primary">#333333</color>
+    <color name="text_secondary">#999999</color>
+    <color name="highlight_orange">#FF9C00</color>
+    <color name="background_light">#F7F8FA</color>
+    <color name="ic_launcher_background">#007AFF</color>
+</resources>

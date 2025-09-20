@@ -1,0 +1,94 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="432dp"
+    android:height="432dp"
+    android:viewportWidth="432"
+    android:viewportHeight="432">
+  
+  <!-- Clipboard background -->
+  <path
+      android:pathData="M126,96 L306,96 Q326,96 326,116 L326,296 Q326,316 306,316 L126,316 Q106,316 106,296 L106,116 Q106,96 126,96 Z"
+      android:fillColor="#FFFFFF"
+      android:fillAlpha="0.95"/>
+  
+  <!-- Clipboard top clip -->
+  <path
+      android:pathData="M186,81 L246,81 Q254,81 254,89 L254,98 Q254,106 246,106 L186,106 Q178,106 178,98 L178,89 Q178,81 186,81 Z"
+      android:fillColor="#5856D6"/>
+  
+  <!-- Item 1 - completed circle -->
+  <circle
+      android:cx="156"
+      android:cy="146"
+      android:r="12"
+      android:fillColor="#34C759"/>
+  
+  <!-- Item 1 - checkmark -->
+  <path
+      android:pathData="M149,146 L154,151 L163,142"
+      android:strokeColor="#FFFFFF"
+      android:strokeWidth="3"
+      android:strokeLineCap="round"
+      android:strokeLineJoin="round"/>
+  
+  <!-- Item 1 - text -->
+  <path
+      android:pathData="M176,142 L266,142 Q270,142 270,146 L270,150 Q270,154 266,154 L176,154 Q172,154 172,150 L172,146 Q172,142 176,142 Z"
+      android:fillColor="#FFFFFF"/>
+  
+  <!-- Item 2 - completed circle -->
+  <circle
+      android:cx="156"
+      android:cy="186"
+      android:r="12"
+      android:fillColor="#34C759"/>
+  
+  <!-- Item 2 - checkmark -->
+  <path
+      android:pathData="M149,186 L154,191 L163,182"
+      android:strokeColor="#FFFFFF"
+      android:strokeWidth="3"
+      android:strokeLineCap="round"
+      android:strokeLineJoin="round"/>
+  
+  <!-- Item 2 - text -->
+  <path
+      android:pathData="M176,182 L251,182 Q255,182 255,186 L255,190 Q255,194 251,194 L176,194 Q172,194 172,190 L172,186 Q172,182 176,182 Z"
+      android:fillColor="#FFFFFF"/>
+  
+  <!-- Item 3 - pending circle -->
+  <circle
+      android:cx="156"
+      android:cy="226"
+      android:r="12"
+      android:fillColor="#FF3B30"/>
+  
+  <!-- Item 3 - text -->
+  <path
+      android:pathData="M176,222 L261,222 Q265,222 265,226 L265,230 Q265,234 261,234 L176,234 Q172,234 172,230 L172,226 Q172,222 176,222 Z"
+      android:fillColor="#FFFFFF"
+      android:fillAlpha="0.7"/>
+  
+  <!-- Item 4 - pending circle -->
+  <circle
+      android:cx="156"
+      android:cy="266"
+      android:r="12"
+      android:fillColor="#FF9500"/>
+  
+  <!-- Item 4 - text -->
+  <path
+      android:pathData="M176,262 L246,262 Q250,262 250,266 L250,270 Q250,274 246,274 L176,274 Q172,274 172,270 L172,266 Q172,262 176,262 Z"
+      android:fillColor="#FFFFFF"
+      android:fillAlpha="0.7"/>
+  
+  <!-- Progress bar background -->
+  <path
+      android:pathData="M156,291 L276,291 Q279,291 279,294 L279,297 Q279,300 276,300 L156,300 Q153,300 153,297 L153,294 Q153,291 156,291 Z"
+      android:fillColor="#FFFFFF"
+      android:fillAlpha="0.3"/>
+  
+  <!-- Progress bar fill -->
+  <path
+      android:pathData="M156,291 L216,291 Q219,291 219,294 L219,297 Q219,300 216,300 L156,300 Q153,300 153,297 L153,294 Q153,291 156,291 Z"
+      android:fillColor="#34C759"/>
+</vector>
