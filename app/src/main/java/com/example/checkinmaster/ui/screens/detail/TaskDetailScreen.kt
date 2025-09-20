@@ -6,6 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.flowlayout.FlowRow
 import kotlinx.coroutines.launch
 import java.time.*
 import java.time.format.DateTimeFormatter
@@ -36,14 +37,34 @@ fun TaskDetailScreen(
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(value = task.targetAppPackageName.orEmpty(), onValueChange = viewModel::updatePackage, label = { Text("包名") }, modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.height(8.dp))
+            Text(text = "常用应用：一键填写包名", style = MaterialTheme.typography.labelMedium)
+            Spacer(Modifier.height(6.dp))
+            FlowRow(mainAxisSpacing = 8.dp, crossAxisSpacing = 8.dp) {
+                val quickApps = listOf(
+                    "淘宝" to "com.taobao.taobao",
+                    "京东" to "com.jingdong.app.mall",
+                    "支付宝" to "com.eg.android.AlipayGphone"
+                )
+                quickApps.forEach { (label, pkg) ->
+                    AssistChip(onClick = { viewModel.updatePackage(pkg) }, label = { Text(label) })
+                }
+            }
+            Spacer(Modifier.height(8.dp))
             OutlinedTextField(value = task.deepLinkUri.orEmpty(), onValueChange = viewModel::updateDeepLink, label = { Text("Deep Link") }, modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(value = task.notes, onValueChange = viewModel::updateNotes, label = { Text("备注") }, modifier = Modifier.fillMaxWidth(), minLines = 2)
             Spacer(Modifier.height(12.dp))
             Text(text = "优先级: ${task.priority}")
-            Row { (1..3).forEach { p ->
-                Button(onClick = { viewModel.updatePriority(p) }, modifier = Modifier.padding(end = 8.dp)) { Text("$p") }
-            } }
+            Row {
+                (1..3).forEach { p ->
+                    FilterChip(
+                        selected = task.priority == p,
+                        onClick = { viewModel.updatePriority(p) },
+                        label = { Text("$p") },
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                }
+            }
             Spacer(Modifier.height(16.dp))
             val displayText = remember(selectedDate, selectedTime) {
                 if (selectedDate != null && selectedTime != null) {
@@ -55,10 +76,10 @@ fun TaskDetailScreen(
                     "未设置提醒"
                 }
             }
-            Text(text = "提醒时间: $displayText", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "提醒时间（每天）: $displayText", style = MaterialTheme.typography.bodyMedium)
             Spacer(Modifier.height(8.dp))
             Row {
-                Button(onClick = {
+                OutlinedButton(onClick = {
                     val today = LocalDate.now()
                     val dialog = android.app.DatePickerDialog(
                         context,
@@ -70,7 +91,7 @@ fun TaskDetailScreen(
                     dialog.show()
                 }) { Text("选择日期") }
                 Spacer(Modifier.width(12.dp))
-                Button(onClick = {
+                OutlinedButton(onClick = {
                     val now = LocalTime.now()
                     val base = selectedTime ?: now
                     val dialog = android.app.TimePickerDialog(
@@ -93,7 +114,7 @@ fun TaskDetailScreen(
                     scope.launch { snackbarHostState.showSnackbar("已设置提醒") }
                 }) { Text("设置提醒") }
                 Spacer(Modifier.width(12.dp))
-                Button(onClick = {
+                OutlinedButton(onClick = {
                     viewModel.updateReminderTime(null)
                     selectedDate = null
                     selectedTime = null
@@ -115,7 +136,7 @@ fun TaskDetailScreen(
                 }) { Text("保存") }
                 Spacer(Modifier.width(12.dp))
                 if (task.id != 0) {
-                    Button(onClick = {
+                    OutlinedButton(onClick = {
                         scope.launch {
                             viewModel.delete()
                             snackbarHostState.showSnackbar("已删除")
