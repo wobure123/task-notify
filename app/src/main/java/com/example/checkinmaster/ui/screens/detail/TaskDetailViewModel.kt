@@ -28,8 +28,6 @@ class TaskDetailViewModel @Inject constructor(
 
     private val workManager = WorkManager.getInstance(context)
 
-    private val workManager = WorkManager.getInstance(context)
-
     private val taskId: Int? = savedStateHandle.get<Int>("taskId")
 
     private val _taskState = MutableStateFlow(

@@ -40,7 +40,12 @@ class NotificationWorker @AssistedInject constructor(
         val pendingIntent: PendingIntent = TaskStackBuilder.create(applicationContext).run {
             addNextIntentWithParentStack(intent)
             getPendingIntent(id, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        }
+        } ?: PendingIntent.getActivity(
+            applicationContext,
+            id,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)

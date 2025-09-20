@@ -40,6 +40,6 @@ class MainApplication : Application(), Configuration.Provider {
         )
     }
 
-    override fun getWorkManagerConfiguration(): Configuration =
-        Configuration.Builder().setWorkerFactory(workerFactory).build()
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder().setWorkerFactory(workerFactory).build()
 }
