@@ -6,11 +6,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.flowlayout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Arrangement
+// Removed accompanist FlowRow; using Compose Foundation FlowRow
 import kotlinx.coroutines.launch
 import java.time.*
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TaskDetailScreen(
     viewModel: TaskDetailViewModel,
@@ -39,7 +43,10 @@ fun TaskDetailScreen(
             Spacer(Modifier.height(8.dp))
             Text(text = "常用应用：一键填写包名", style = MaterialTheme.typography.labelMedium)
             Spacer(Modifier.height(6.dp))
-            FlowRow(mainAxisSpacing = 8.dp, crossAxisSpacing = 8.dp) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 val quickApps = listOf(
                     "淘宝" to "com.taobao.taobao",
                     "京东" to "com.jingdong.app.mall",
