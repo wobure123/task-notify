@@ -4,15 +4,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.Data
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.WorkManager
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import com.example.checkinmaster.data.model.Task
 import com.example.checkinmaster.data.repository.TaskRepository
 import com.example.checkinmaster.worker.NotificationWorker
+import com.example.checkinmaster.worker.ReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,7 +26,7 @@ class TaskDetailViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-    private val workManager = WorkManager.getInstance(context)
+    // Work scheduling is handled via ReminderScheduler
 
     private val taskId: Int? = savedStateHandle.get<Int>("taskId")
 
@@ -74,32 +71,16 @@ class TaskDetailViewModel @Inject constructor(
 
     private fun scheduleReminderIfNeeded(task: Task) {
         val reminder = task.reminderTime ?: return
-        val zone = ZoneId.systemDefault()
-        val now = ZonedDateTime.now(zone)
-        val timeOfDay = Instant.ofEpochMilli(reminder).atZone(zone).toLocalTime().withSecond(0).withNano(0)
-        var next = now.withHour(timeOfDay.hour).withMinute(timeOfDay.minute).withSecond(0).withNano(0)
-        if (!next.isAfter(now)) next = next.plusDays(1)
-        val initialDelay = Duration.between(now, next).toMillis()
-
-        val tag = "task_reminder_${task.id}"
-        val uniqueName = tag
-        // Cancel any previous works using this tag (covers legacy one-time works)
-        workManager.cancelAllWorkByTag(tag)
-        val data = Data.Builder().putInt(NotificationWorker.KEY_TASK_ID, task.id).build()
-        val request = PeriodicWorkRequestBuilder<NotificationWorker>(24, TimeUnit.HOURS)
-            .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
-            .setInputData(data)
-            .addTag(tag)
-            .build()
-        workManager.enqueueUniquePeriodicWork(uniqueName, ExistingPeriodicWorkPolicy.UPDATE, request)
+        if (task.isCompleted) {
+            ReminderScheduler.cancel(context, task.id)
+            return
+        }
+        ReminderScheduler.scheduleDaily(context, task.id, reminder)
     }
 
     suspend fun delete() {
         val current = _taskState.value
         if (current.id != 0) repository.deleteTask(current)
-        val tag = "task_reminder_${current.id}"
-        workManager.cancelAllWorkByTag(tag)
-        // Also cancel unique periodic work with the same name
-        workManager.cancelUniqueWork(tag)
+        ReminderScheduler.cancel(context, current.id)
     }
 }

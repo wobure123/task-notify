@@ -26,9 +26,6 @@ fun TaskDetailScreen(
     val context = LocalContext.current
     val zoneId = remember { ZoneId.systemDefault() }
     val formatter = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm") }
-    var selectedDate by remember(task.reminderTime) {
-        mutableStateOf(task.reminderTime?.let { Instant.ofEpochMilli(it).atZone(zoneId).toLocalDate() })
-    }
     var selectedTime by remember(task.reminderTime) {
         mutableStateOf(task.reminderTime?.let { Instant.ofEpochMilli(it).atZone(zoneId).toLocalTime().withSecond(0).withNano(0) })
     }
@@ -73,31 +70,19 @@ fun TaskDetailScreen(
                 }
             }
             Spacer(Modifier.height(16.dp))
-            val displayText = remember(selectedDate, selectedTime) {
-                if (selectedDate != null && selectedTime != null) {
-                    val ldt = LocalDateTime.of(selectedDate, selectedTime)
-                    ldt.format(formatter)
-                } else if (task.reminderTime != null) {
-                    Instant.ofEpochMilli(task.reminderTime!!).atZone(zoneId).toLocalDateTime().format(formatter)
-                } else {
-                    "未设置提醒"
+            val displayText = remember(task.reminderTime, selectedTime) {
+                task.reminderTime?.let { ts ->
+                    val next = Instant.ofEpochMilli(ts).atZone(zoneId)
+                    val daily = next.toLocalTime()
+                    val nextStr = next.format(formatter)
+                    "每天 ${daily.format(DateTimeFormatter.ofPattern("HH:mm"))}（下次：$nextStr）"
+                } ?: run {
+                    selectedTime?.let { t -> "每天 ${t.format(DateTimeFormatter.ofPattern("HH:mm"))}" } ?: "未设置提醒"
                 }
             }
             Text(text = "提醒时间（每天）: $displayText", style = MaterialTheme.typography.bodyMedium)
             Spacer(Modifier.height(8.dp))
             Row {
-                OutlinedButton(onClick = {
-                    val today = LocalDate.now()
-                    val dialog = android.app.DatePickerDialog(
-                        context,
-                        { _, y, m, d -> selectedDate = LocalDate.of(y, m + 1, d) },
-                        (selectedDate ?: today).year,
-                        (selectedDate ?: today).monthValue - 1,
-                        (selectedDate ?: today).dayOfMonth
-                    )
-                    dialog.show()
-                }) { Text("选择日期") }
-                Spacer(Modifier.width(12.dp))
                 OutlinedButton(onClick = {
                     val now = LocalTime.now()
                     val base = selectedTime ?: now
@@ -114,16 +99,16 @@ fun TaskDetailScreen(
             Spacer(Modifier.height(8.dp))
             Row {
                 Button(onClick = {
-                    val date = selectedDate ?: LocalDate.now()
+                    val nowZdt = ZonedDateTime.now(zoneId)
                     val time = selectedTime ?: LocalTime.now().withSecond(0).withNano(0)
-                    val millis = LocalDateTime.of(date, time).atZone(zoneId).toInstant().toEpochMilli()
-                    viewModel.updateReminderTime(millis)
+                    var next = nowZdt.withHour(time.hour).withMinute(time.minute).withSecond(0).withNano(0)
+                    if (!next.isAfter(nowZdt)) next = next.plusDays(1)
+                    viewModel.updateReminderTime(next.toInstant().toEpochMilli())
                     scope.launch { snackbarHostState.showSnackbar("已设置提醒") }
                 }) { Text("设置提醒") }
                 Spacer(Modifier.width(12.dp))
                 OutlinedButton(onClick = {
                     viewModel.updateReminderTime(null)
-                    selectedDate = null
                     selectedTime = null
                     scope.launch { snackbarHostState.showSnackbar("已清除提醒") }
                 }) { Text("清除提醒") }
