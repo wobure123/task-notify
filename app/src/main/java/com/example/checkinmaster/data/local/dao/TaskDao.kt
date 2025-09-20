@@ -13,7 +13,7 @@ interface TaskDao {
     fun getTaskById(id: Int): Flow<Task?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsertTask(task: Task)
+    suspend fun upsertTask(task: Task): Long
 
     @Delete
     suspend fun deleteTask(task: Task)

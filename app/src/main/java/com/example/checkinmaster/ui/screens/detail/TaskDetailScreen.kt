@@ -4,10 +4,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.*
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun TaskDetailScreen(
@@ -17,9 +18,14 @@ fun TaskDetailScreen(
     val task by viewModel.taskState.collectAsState()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()) }
-    var reminderInput by remember(task.reminderTime) {
-        mutableStateOf(task.reminderTime?.let { dateFormat.format(Date(it)) } ?: "")
+    val context = LocalContext.current
+    val zoneId = remember { ZoneId.systemDefault() }
+    val formatter = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm") }
+    var selectedDate by remember(task.reminderTime) {
+        mutableStateOf(task.reminderTime?.let { Instant.ofEpochMilli(it).atZone(zoneId).toLocalDate() })
+    }
+    var selectedTime by remember(task.reminderTime) {
+        mutableStateOf(task.reminderTime?.let { Instant.ofEpochMilli(it).atZone(zoneId).toLocalTime().withSecond(0).withNano(0) })
     }
 
     Scaffold(
@@ -39,27 +45,58 @@ fun TaskDetailScreen(
                 Button(onClick = { viewModel.updatePriority(p) }, modifier = Modifier.padding(end = 8.dp)) { Text("$p") }
             } }
             Spacer(Modifier.height(16.dp))
-            OutlinedTextField(
-                value = reminderInput,
-                onValueChange = { reminderInput = it },
-                label = { Text("提醒时间 (yyyy-MM-dd HH:mm)") },
-                modifier = Modifier.fillMaxWidth()
-            )
+            val displayText = remember(selectedDate, selectedTime) {
+                if (selectedDate != null && selectedTime != null) {
+                    val ldt = LocalDateTime.of(selectedDate, selectedTime)
+                    ldt.format(formatter)
+                } else if (task.reminderTime != null) {
+                    Instant.ofEpochMilli(task.reminderTime!!).atZone(zoneId).toLocalDateTime().format(formatter)
+                } else {
+                    "未设置提醒"
+                }
+            }
+            Text(text = "提醒时间: $displayText", style = MaterialTheme.typography.bodyMedium)
             Spacer(Modifier.height(8.dp))
             Row {
                 Button(onClick = {
-                    val parsed = kotlin.runCatching { dateFormat.parse(reminderInput)?.time }.getOrNull()
-                    if (parsed != null) {
-                        viewModel.updateReminderTime(parsed)
-                        scope.launch { snackbarHostState.showSnackbar("已设置提醒") }
-                    } else {
-                        scope.launch { snackbarHostState.showSnackbar("时间格式错误") }
-                    }
+                    val today = LocalDate.now()
+                    val dialog = android.app.DatePickerDialog(
+                        context,
+                        { _, y, m, d -> selectedDate = LocalDate.of(y, m + 1, d) },
+                        (selectedDate ?: today).year,
+                        (selectedDate ?: today).monthValue - 1,
+                        (selectedDate ?: today).dayOfMonth
+                    )
+                    dialog.show()
+                }) { Text("选择日期") }
+                Spacer(Modifier.width(12.dp))
+                Button(onClick = {
+                    val now = LocalTime.now()
+                    val base = selectedTime ?: now
+                    val dialog = android.app.TimePickerDialog(
+                        context,
+                        { _, h, min -> selectedTime = LocalTime.of(h, min) },
+                        base.hour,
+                        base.minute,
+                        true
+                    )
+                    dialog.show()
+                }) { Text("选择时间") }
+            }
+            Spacer(Modifier.height(8.dp))
+            Row {
+                Button(onClick = {
+                    val date = selectedDate ?: LocalDate.now()
+                    val time = selectedTime ?: LocalTime.now().withSecond(0).withNano(0)
+                    val millis = LocalDateTime.of(date, time).atZone(zoneId).toInstant().toEpochMilli()
+                    viewModel.updateReminderTime(millis)
+                    scope.launch { snackbarHostState.showSnackbar("已设置提醒") }
                 }) { Text("设置提醒") }
                 Spacer(Modifier.width(12.dp))
                 Button(onClick = {
                     viewModel.updateReminderTime(null)
-                    reminderInput = ""
+                    selectedDate = null
+                    selectedTime = null
                     scope.launch { snackbarHostState.showSnackbar("已清除提醒") }
                 }) { Text("清除提醒") }
             }

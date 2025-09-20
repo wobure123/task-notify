@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.WorkManager
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -17,6 +19,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import java.time.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -59,31 +62,44 @@ class TaskDetailViewModel @Inject constructor(
     fun updateReminderTime(ts: Long?) { _taskState.value = _taskState.value.copy(reminderTime = ts) }
 
     suspend fun save(): Int {
-        val current = _taskState.value
-        repository.upsertTask(current)
+        var current = _taskState.value
+        val rowId = repository.upsertTask(current)
+        if (current.id == 0 && rowId > 0) {
+            current = current.copy(id = rowId.toInt())
+            _taskState.value = current
+        }
         scheduleReminderIfNeeded(current)
         return current.id
     }
 
     private fun scheduleReminderIfNeeded(task: Task) {
         val reminder = task.reminderTime ?: return
-        val delay = reminder - System.currentTimeMillis()
-        if (delay <= 0) return
-        // Cancel previous works with tag
+        val zone = ZoneId.systemDefault()
+        val now = ZonedDateTime.now(zone)
+        val timeOfDay = Instant.ofEpochMilli(reminder).atZone(zone).toLocalTime().withSecond(0).withNano(0)
+        var next = now.withHour(timeOfDay.hour).withMinute(timeOfDay.minute).withSecond(0).withNano(0)
+        if (!next.isAfter(now)) next = next.plusDays(1)
+        val initialDelay = Duration.between(now, next).toMillis()
+
         val tag = "task_reminder_${task.id}"
+        val uniqueName = tag
+        // Cancel any previous works using this tag (covers legacy one-time works)
         workManager.cancelAllWorkByTag(tag)
         val data = Data.Builder().putInt(NotificationWorker.KEY_TASK_ID, task.id).build()
-        val request = OneTimeWorkRequestBuilder<NotificationWorker>()
-            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+        val request = PeriodicWorkRequestBuilder<NotificationWorker>(24, TimeUnit.HOURS)
+            .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
             .setInputData(data)
             .addTag(tag)
             .build()
-        workManager.enqueue(request)
+        workManager.enqueueUniquePeriodicWork(uniqueName, ExistingPeriodicWorkPolicy.UPDATE, request)
     }
 
     suspend fun delete() {
         val current = _taskState.value
         if (current.id != 0) repository.deleteTask(current)
-        workManager.cancelAllWorkByTag("task_reminder_${current.id}")
+        val tag = "task_reminder_${current.id}"
+        workManager.cancelAllWorkByTag(tag)
+        // Also cancel unique periodic work with the same name
+        workManager.cancelUniqueWork(tag)
     }
 }
