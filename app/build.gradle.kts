@@ -31,20 +31,20 @@ android {
             )
 
             // Signing config via environment variables for CI
-            val storeFilePath = System.getenv("SIGNING_STORE_FILE")
-            val storePassword = System.getenv("SIGNING_STORE_PASSWORD")
-            val keyAlias = System.getenv("SIGNING_KEY_ALIAS")
-            val keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
-            if (!storeFilePath.isNullOrEmpty() &&
-                !storePassword.isNullOrEmpty() &&
-                !keyAlias.isNullOrEmpty() &&
-                !keyPassword.isNullOrEmpty()
+            val storeFilePathEnv = System.getenv("SIGNING_STORE_FILE")
+            val storePasswordEnv = System.getenv("SIGNING_STORE_PASSWORD")
+            val keyAliasEnv = System.getenv("SIGNING_KEY_ALIAS")
+            val keyPasswordEnv = System.getenv("SIGNING_KEY_PASSWORD")
+            if (!storeFilePathEnv.isNullOrEmpty() &&
+                !storePasswordEnv.isNullOrEmpty() &&
+                !keyAliasEnv.isNullOrEmpty() &&
+                !keyPasswordEnv.isNullOrEmpty()
             ) {
                 signingConfig = signingConfigs.create("releaseConfig") {
-                    storeFile = file(storeFilePath)
-                    storePassword = storePassword
-                    this.keyAlias = keyAlias
-                    this.keyPassword = keyPassword
+                    storeFile = file(storeFilePathEnv)
+                    this.storePassword = storePasswordEnv
+                    this.keyAlias = keyAliasEnv
+                    this.keyPassword = keyPasswordEnv
                 }
             }
         }
