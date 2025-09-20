@@ -93,6 +93,9 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     implementation("androidx.compose.material3:material3:1.2.1")
 
+    // Material Components (XML styles support for Theme.Material3)
+    implementation("com.google.android.material:material:1.12.0")
+
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
