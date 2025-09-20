@@ -1,6 +1,7 @@
 package com.example.checkinmaster
 
 import android.app.Application
+import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -21,7 +22,11 @@ class MainApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-        scheduleDailyReset()
+        try {
+            scheduleDailyReset()
+        } catch (t: Throwable) {
+            Log.e("MainApplication", "Failed to schedule daily reset", t)
+        }
     }
 
     private fun scheduleDailyReset() {

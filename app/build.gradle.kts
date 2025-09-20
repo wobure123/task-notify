@@ -70,6 +70,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -128,6 +129,9 @@ dependencies {
 
     // Notifications compat
     implementation("androidx.core:core-ktx:1.13.1")
+
+    // Java 8+ API desugaring (java.time on API < 26)
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
