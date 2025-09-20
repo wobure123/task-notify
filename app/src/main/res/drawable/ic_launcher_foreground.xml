@@ -15,11 +15,9 @@
       android:pathData="M186,81 L246,81 Q254,81 254,89 L254,98 Q254,106 246,106 L186,106 Q178,106 178,98 L178,89 Q178,81 186,81 Z"
       android:fillColor="#5856D6"/>
   
-  <!-- Item 1 - completed circle -->
-  <circle
-      android:cx="156"
-      android:cy="146"
-      android:r="12"
+  <!-- Item 1 - completed indicator (square) -->
+  <path
+      android:pathData="M144,134 L168,134 L168,158 L144,158 Z"
       android:fillColor="#34C759"/>
   
   <!-- Item 1 - checkmark -->
@@ -35,11 +33,9 @@
       android:pathData="M176,142 L266,142 Q270,142 270,146 L270,150 Q270,154 266,154 L176,154 Q172,154 172,150 L172,146 Q172,142 176,142 Z"
       android:fillColor="#FFFFFF"/>
   
-  <!-- Item 2 - completed circle -->
-  <circle
-      android:cx="156"
-      android:cy="186"
-      android:r="12"
+  <!-- Item 2 - completed indicator (square) -->
+  <path
+      android:pathData="M144,174 L168,174 L168,198 L144,198 Z"
       android:fillColor="#34C759"/>
   
   <!-- Item 2 - checkmark -->
@@ -55,11 +51,9 @@
       android:pathData="M176,182 L251,182 Q255,182 255,186 L255,190 Q255,194 251,194 L176,194 Q172,194 172,190 L172,186 Q172,182 176,182 Z"
       android:fillColor="#FFFFFF"/>
   
-  <!-- Item 3 - pending circle -->
-  <circle
-      android:cx="156"
-      android:cy="226"
-      android:r="12"
+  <!-- Item 3 - pending indicator (square) -->
+  <path
+      android:pathData="M144,214 L168,214 L168,238 L144,238 Z"
       android:fillColor="#FF3B30"/>
   
   <!-- Item 3 - text -->
@@ -68,11 +62,9 @@
       android:fillColor="#FFFFFF"
       android:fillAlpha="0.7"/>
   
-  <!-- Item 4 - pending circle -->
-  <circle
-      android:cx="156"
-      android:cy="266"
-      android:r="12"
+  <!-- Item 4 - pending indicator (square) -->
+  <path
+      android:pathData="M144,254 L168,254 L168,278 L144,278 Z"
       android:fillColor="#FF9500"/>
   
   <!-- Item 4 - text -->
