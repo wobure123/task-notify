@@ -2,6 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Package visibility: allow querying launcher activities and specific packages -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+        <!-- Common packages you may launch directly by包名，可按需补充 -->
+        <package android:name="com.taobao.taobao" />
+        <package android:name="com.jingdong.app.mall" />
+        <package android:name="com.eg.android.AlipayGphone" />
+    </queries>
+
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application

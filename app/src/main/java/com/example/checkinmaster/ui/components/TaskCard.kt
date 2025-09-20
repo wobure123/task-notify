@@ -82,19 +82,38 @@ private fun launchTask(context: Context, task: Task, onLaunchFailed: (String) ->
     val pkg = task.targetAppPackageName
     try {
         if (!deepLink.isNullOrBlank()) {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(deepLink))
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(intent)
-            return
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(deepLink)).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            if (intent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(intent)
+                return
+            } else if (!pkg.isNullOrBlank()) {
+                // 深链无可处理 Activity，尝试直接启动包
+                val launchIntent = context.packageManager.getLaunchIntentForPackage(pkg)
+                if (launchIntent != null) {
+                    context.startActivity(launchIntent)
+                    return
+                }
+            }
         }
         if (!pkg.isNullOrBlank()) {
             val launchIntent = context.packageManager.getLaunchIntentForPackage(pkg)
             if (launchIntent != null) {
                 context.startActivity(launchIntent)
                 return
+            } else {
+                // 尝试跳到应用商店
+                val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$pkg")).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                if (marketIntent.resolveActivity(context.packageManager) != null) {
+                    context.startActivity(marketIntent)
+                    return
+                }
             }
         }
-        onLaunchFailed("无法打开：未找到DeepLink或包名")
+        onLaunchFailed("无法打开：未找到可处理的 DeepLink 或包名不可启动")
     } catch (e: ActivityNotFoundException) {
         onLaunchFailed("应用未安装或链接无效")
     }
