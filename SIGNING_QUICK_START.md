@@ -33,6 +33,10 @@ keytool -genkey -v -keystore release-key.jks -keyalg RSA -keysize 2048 -validity
 
 ### 第2步：转换为 Base64
 ```bash
+# 方式一（推荐，Linux/macOS）：不换行输出
+base64 -w 0 release-key.jks > keystore.b64
+
+# 方式二（通用）：删除换行
 base64 -i release-key.jks | tr -d '\n' > keystore.b64
 ```
 复制文件 `keystore.b64` 的全部内容。
@@ -43,6 +47,7 @@ base64 -i release-key.jks | tr -d '\n' > keystore.b64
 - `KEYSTORE_PASSWORD`：你的 Keystore 密码
 - `KEY_ALIAS`：你的密钥别名
 - `KEY_PASSWORD`：你的密钥密码
+  - 若生成证书时在“Enter key password for <alias> (RETURN if same as keystore password):”直接回车，则与 Keystore 密码相同；此时可与 `KEYSTORE_PASSWORD` 填同一个值。
 
 ### 第4步：触发构建并下载 APK
 - 推送任意代码变更或在 Actions 使用 `Run workflow` 触发
@@ -55,6 +60,14 @@ base64 -i release-key.jks | tr -d '\n' > keystore.b64
 
 - Q: 配置了 Secrets 但仍显示“未提供签名信息”？
   - A: 确认四个 Secrets 名称完全一致，且没有多余空格。重新触发构建。
+
+- Q: 日志提示 `base64: invalid input`？
+  - A: 通常是 Base64 内容中有换行或被粘贴时插入了空格/不可见字符。
+  - 解决：用 `base64 -w 0 release-key.jks > keystore.b64` 重新生成，并完整拷贝内容。
+
+- Q: 日志提示“Keystore password may be incorrect. Validation failed.”？
+  - A: `KEYSTORE_PASSWORD` 可能填错，或 keystore 与密码不匹配。
+  - 解决：本地用 `keytool -list -keystore release-key.jks -storepass <你的密码>` 验证；必要时用 `keytool -keypasswd` 重设密钥密码（可与 keystore 密码一致）。
 
 - Q: 我能否换成自己的别名和密码？
   - A: 可以，确保四个 Secrets 与实际一致。
