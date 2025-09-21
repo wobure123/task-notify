@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import androidx.work.WorkManager
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -23,6 +24,8 @@ class MainApplication : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         try {
+            // Manually initialize WorkManager using our Configuration/WorkerFactory
+            WorkManager.initialize(this, workManagerConfiguration)
             scheduleDailyReset()
         } catch (t: Throwable) {
             Log.e("MainApplication", "Failed to schedule daily reset", t)
