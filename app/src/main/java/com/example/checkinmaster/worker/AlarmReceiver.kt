@@ -6,6 +6,7 @@ import android.content.Intent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.firstOrNull
 import com.example.checkinmaster.data.repository.TaskRepository
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -25,9 +26,7 @@ class AlarmReceiver : BroadcastReceiver() {
 
         // Run logic off main thread
         CoroutineScope(Dispatchers.IO).launch {
-            val task = repository.getTaskById(taskId).let { flow ->
-                kotlinx.coroutines.flow.firstOrNull(flow)
-            }
+            val task = repository.getTaskById(taskId).firstOrNull()
             // Reschedule next day regardless
             AlarmScheduler.rescheduleNextDay(context, taskId, hour, minute)
 
