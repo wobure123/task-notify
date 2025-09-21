@@ -15,7 +15,7 @@ object AlarmScheduler {
 
     private fun alarmManager(context: Context) = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    private fun pendingIntent(context: Context, taskId: Int, hour: Int, minute: Int, flags: Int): PendingIntent {
+    private fun pendingIntent(context: Context, taskId: Int, hour: Int, minute: Int, flags: Int): PendingIntent? {
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             action = ACTION_ALARM
             putExtra(EXTRA_TASK_ID, taskId)
@@ -40,7 +40,7 @@ object AlarmScheduler {
         // Cancel any previous
         cancel(context, taskId)
 
-        val pi = pendingIntent(context, taskId, hour, minute, PendingIntent.FLAG_CANCEL_CURRENT)
+        val pi = pendingIntent(context, taskId, hour, minute, PendingIntent.FLAG_CANCEL_CURRENT)!!
         val am = alarmManager(context)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (am.canScheduleExactAlarms()) {
@@ -61,7 +61,7 @@ object AlarmScheduler {
         val now = ZonedDateTime.now(zone)
         val next = now.plusDays(1).withHour(hour).withMinute(minute).withSecond(0).withNano(0)
         val triggerAt = next.toInstant().toEpochMilli()
-        val pi = pendingIntent(context, taskId, hour, minute, PendingIntent.FLAG_CANCEL_CURRENT)
+        val pi = pendingIntent(context, taskId, hour, minute, PendingIntent.FLAG_CANCEL_CURRENT)!!
         val am = alarmManager(context)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (am.canScheduleExactAlarms()) {

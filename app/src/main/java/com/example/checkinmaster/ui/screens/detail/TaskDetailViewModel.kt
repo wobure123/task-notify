@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import java.time.*
 import javax.inject.Inject
+import android.util.Log
 
 @HiltViewModel
 class TaskDetailViewModel @Inject constructor(
@@ -72,12 +73,16 @@ class TaskDetailViewModel @Inject constructor(
 
     private fun scheduleReminderIfNeeded(task: Task) {
         val reminder = task.reminderTime
-        if (reminder == null) {
-            ReminderScheduler.cancel(context, task.id)
-            AlarmScheduler.cancel(context, task.id)
-        } else {
-            // Use exact alarm for primary delivery; keep WorkManager as optional fallback if desired
-            AlarmScheduler.scheduleDailyExact(context, task.id, reminder)
+        try {
+            if (reminder == null) {
+                ReminderScheduler.cancel(context, task.id)
+                AlarmScheduler.cancel(context, task.id)
+            } else {
+                // Use exact alarm for primary delivery; keep WorkManager as optional fallback if desired
+                AlarmScheduler.scheduleDailyExact(context, task.id, reminder)
+            }
+        } catch (t: Throwable) {
+            Log.e("TaskDetailViewModel", "Failed to schedule/cancel reminder", t)
         }
     }
 
