@@ -6,6 +6,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import android.os.Build
+import android.app.AlarmManager
+import android.app.NotificationManager
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
@@ -103,6 +109,33 @@ fun TaskDetailScreen(
                     val time = selectedTime ?: LocalTime.now().withSecond(0).withNano(0)
                     var next = nowZdt.withHour(time.hour).withMinute(time.minute).withSecond(0).withNano(0)
                     if (!next.isAfter(nowZdt)) next = next.plusDays(1)
+                    // Permission checks and guided jumps
+                    var guided = false
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        val am = context.getSystemService(AlarmManager::class.java)
+                        if (am != null && !am.canScheduleExactAlarms()) {
+                            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                                data = Uri.parse("package:" + context.packageName)
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            runCatching { context.startActivity(intent) }
+                            guided = true
+                            scope.launch { snackbarHostState.showSnackbar("请在设置中允许精确闹钟，以确保准时提醒") }
+                        }
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        val nm = context.getSystemService(NotificationManager::class.java)
+                        val enabled = nm?.areNotificationsEnabled() ?: true
+                        if (!enabled) {
+                            val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            runCatching { context.startActivity(intent) }
+                            guided = true
+                            scope.launch { snackbarHostState.showSnackbar("请开启应用通知权限，以接收提醒") }
+                        }
+                    }
                     viewModel.updateReminderTime(next.toInstant().toEpochMilli())
                     scope.launch { snackbarHostState.showSnackbar("已设置提醒") }
                 }) { Text("设置提醒") }

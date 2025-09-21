@@ -10,6 +10,7 @@ import com.example.checkinmaster.data.model.Task
 import com.example.checkinmaster.data.repository.TaskRepository
 import com.example.checkinmaster.worker.NotificationWorker
 import com.example.checkinmaster.worker.ReminderScheduler
+import com.example.checkinmaster.worker.AlarmScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -73,8 +74,10 @@ class TaskDetailViewModel @Inject constructor(
         val reminder = task.reminderTime
         if (reminder == null) {
             ReminderScheduler.cancel(context, task.id)
+            AlarmScheduler.cancel(context, task.id)
         } else {
-            ReminderScheduler.scheduleDaily(context, task.id, reminder)
+            // Use exact alarm for primary delivery; keep WorkManager as optional fallback if desired
+            AlarmScheduler.scheduleDailyExact(context, task.id, reminder)
         }
     }
 
