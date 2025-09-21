@@ -89,14 +89,28 @@ private fun launchTask(context: Context, task: Task, onLaunchFailed: (String) ->
     val pkg = task.targetAppPackageName
     try {
         if (!deepLink.isNullOrBlank()) {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(deepLink)).apply {
+            val uri = Uri.parse(deepLink)
+            val scheme = uri.scheme?.lowercase()
+            if (!pkg.isNullOrBlank() && (scheme == "http" || scheme == "https")) {
+                // 优先尝试用指定包名在 App 内打开该 H5 链接
+                val appIntent = Intent(Intent.ACTION_VIEW, uri).apply {
+                    setPackage(pkg)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                if (appIntent.resolveActivity(context.packageManager) != null) {
+                    context.startActivity(appIntent)
+                    return
+                }
+            }
+            // 退回普通 VIEW（可能走浏览器或系统选择器）
+            val viewIntent = Intent(Intent.ACTION_VIEW, uri).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
-            if (intent.resolveActivity(context.packageManager) != null) {
-                context.startActivity(intent)
+            if (viewIntent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(viewIntent)
                 return
             } else if (!pkg.isNullOrBlank()) {
-                // 深链无可处理 Activity，尝试直接启动包
+                // 深链不可处理，尝试直接启动目标应用
                 val launchIntent = context.packageManager.getLaunchIntentForPackage(pkg)
                 if (launchIntent != null) {
                     context.startActivity(launchIntent)
