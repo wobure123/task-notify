@@ -36,14 +36,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val updated = task.copy(isCompleted = newValue)
             repository.upsertTask(updated)
-            // Cancel or reschedule reminder based on completion
-            if (updated.id != 0) {
-                if (updated.isCompleted) {
-                    ReminderScheduler.cancel(context, updated.id)
-                } else if (updated.reminderTime != null) {
-                    ReminderScheduler.scheduleDaily(context, updated.id, updated.reminderTime!!)
-                }
-            }
+            // 不再基于完成状态取消/恢复调度；由 NotificationWorker 在运行时判断是否发送。
         }
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.draw.scale
 import com.example.checkinmaster.data.model.Task
 
 @Composable
@@ -43,7 +44,11 @@ fun TaskCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Checkbox(checked = task.isCompleted, onCheckedChange = { onToggleComplete(it) })
+                Checkbox(
+                    checked = task.isCompleted,
+                    onCheckedChange = { onToggleComplete(it) },
+                    modifier = Modifier.scale(1.15f)
+                )
             }
             if (task.notes.isNotBlank()) {
                 Text(
@@ -56,7 +61,9 @@ fun TaskCard(
             }
             Spacer(modifier = Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                AssistChip(onClick = { launchTask(context, task, onLaunchFailed) }, label = { Text("去完成") })
+                FilledTonalButton(onClick = { launchTask(context, task, onLaunchFailed) }) {
+                    Text("去完成")
+                }
                 PriorityTag(priority = task.priority)
             }
         }

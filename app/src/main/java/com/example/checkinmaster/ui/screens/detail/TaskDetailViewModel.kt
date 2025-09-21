@@ -70,12 +70,12 @@ class TaskDetailViewModel @Inject constructor(
     }
 
     private fun scheduleReminderIfNeeded(task: Task) {
-        val reminder = task.reminderTime ?: return
-        if (task.isCompleted) {
+        val reminder = task.reminderTime
+        if (reminder == null) {
             ReminderScheduler.cancel(context, task.id)
-            return
+        } else {
+            ReminderScheduler.scheduleDaily(context, task.id, reminder)
         }
-        ReminderScheduler.scheduleDaily(context, task.id, reminder)
     }
 
     suspend fun delete() {
