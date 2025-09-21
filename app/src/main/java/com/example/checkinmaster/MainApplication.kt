@@ -23,9 +23,19 @@ class MainApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        // Initialize WorkManager with HiltWorkerFactory to support @HiltWorker
         try {
-            // Manually initialize WorkManager using our Configuration/WorkerFactory
-            WorkManager.initialize(this, workManagerConfiguration)
+            WorkManager.initialize(
+                this,
+                Configuration.Builder()
+                    .setWorkerFactory(workerFactory)
+                    .setMinimumLoggingLevel(android.util.Log.VERBOSE)
+                    .build()
+            )
+        } catch (t: Throwable) {
+            Log.e("MainApplication", "WorkManager init failed", t)
+        }
+        try {
             scheduleDailyReset()
         } catch (t: Throwable) {
             Log.e("MainApplication", "Failed to schedule daily reset", t)
