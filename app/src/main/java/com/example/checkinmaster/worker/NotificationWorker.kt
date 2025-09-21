@@ -34,7 +34,7 @@ class NotificationWorker @AssistedInject constructor(
         createChannel()
 
         val intent = Intent(applicationContext, MainActivity::class.java).apply {
-            putExtra("open_task_id", id)
+            // Open app to Home (no deep navigation extras)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         val pendingIntent: PendingIntent = TaskStackBuilder.create(applicationContext).run {

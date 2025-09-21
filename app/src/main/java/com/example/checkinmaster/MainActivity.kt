@@ -30,12 +30,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 val navController = rememberNavController()
-                val openTaskId = intent.getIntExtra("open_task_id", -1)
-                LaunchedEffect(openTaskId) {
-                    if (openTaskId != -1) {
-                        navController.navigate("detail/$openTaskId")
-                    }
-                }
                 AppNavigation(navController)
             }
         }
