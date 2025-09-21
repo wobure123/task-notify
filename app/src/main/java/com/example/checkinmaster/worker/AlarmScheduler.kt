@@ -42,7 +42,14 @@ object AlarmScheduler {
 
         val pi = pendingIntent(context, taskId, hour, minute, PendingIntent.FLAG_CANCEL_CURRENT)
         val am = alarmManager(context)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (am.canScheduleExactAlarms()) {
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pi)
+            } else {
+                // Fallback to inexact to avoid SecurityException when exact alarms not allowed
+                am.set(AlarmManager.RTC_WAKEUP, triggerAt, pi)
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pi)
         } else {
             am.setExact(AlarmManager.RTC_WAKEUP, triggerAt, pi)
@@ -56,7 +63,13 @@ object AlarmScheduler {
         val triggerAt = next.toInstant().toEpochMilli()
         val pi = pendingIntent(context, taskId, hour, minute, PendingIntent.FLAG_CANCEL_CURRENT)
         val am = alarmManager(context)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (am.canScheduleExactAlarms()) {
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pi)
+            } else {
+                am.set(AlarmManager.RTC_WAKEUP, triggerAt, pi)
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pi)
         } else {
             am.setExact(AlarmManager.RTC_WAKEUP, triggerAt, pi)
